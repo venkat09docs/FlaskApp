@@ -2,7 +2,7 @@ alchemy-mock==0.4.3
 atomicwrites==1.4.0
 attrs==21.4.0
 bcrypt==3.2.0
-cffi==1.15.0
+cffi==1.16.0
 click==8.0.4
 colorama==0.4.3
 coverage==6.3.2
@@ -12,7 +12,7 @@ Flask-Bcrypt==0.7.1
 Flask-Login==0.4.1
 Flask-SQLAlchemy==2.5.1
 Flask-WTF==0.14.2
-greenlet==1.1.2
+greenlet==3.0.3
 iniconfig==1.1.1
 itsdangerous==2.1.0
 Jinja2==3.0.3
