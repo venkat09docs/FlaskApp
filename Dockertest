@@ -1,0 +1,32 @@
+def img = "httpd:2.4-alpine"
+      pipeline {
+          agent {
+              label 'BuildServer'
+          }
+          
+          environment {
+            cont = ""
+          }
+
+          stages {
+              stage('Run Docker') {
+                  steps {
+                      echo 'Running Httpd Container'
+                      script { 
+                        cont = docker.image("${img}").run("-d -p 80:80")
+                      }
+                  }
+                  post {
+                    always {
+                      // One or more steps need to be included within each condition's block.
+                      script {
+                        if (cont){
+                            cont.stop()
+                        }
+                      }
+                    }
+                  }
+              }
+              
+          }
+      }
