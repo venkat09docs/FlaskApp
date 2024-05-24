@@ -1,7 +1,7 @@
 ## Overview
 
 
-## Key Python Modules Used
+### Key Python Modules Used
 - Flask: micro-framework for web application development
 - SQLAlchemy - ORM (Object Relational Mapper)
 - Flask-Bcrypt - password hashing
@@ -10,7 +10,7 @@
 
 This application is written using Python 3.10.
 
-## Running the application
+### Running the application
 DirPath/FlaskAPP>python run.py
 
 ## Unit Testing and Code Coverage
