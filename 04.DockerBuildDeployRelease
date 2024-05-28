@@ -52,5 +52,13 @@ pipeline {
                   }            
               }              
           }    
-      } // end of Stages      
+      } // end of Stages  
+      post {
+          always {
+              if (currentBuild.currentResult == 'FAILURE'){
+                  prevImg = "${registry}" + ":${currentBuild.previousSuccessfulBuild.number}"
+                  sh returnStatus: true, script: 'docker run -d --rm --name ${JOB_NAME} -p 5000:5000 ${prevImg}'
+              }
+          }
+      }    
   } // end of Pipeline
