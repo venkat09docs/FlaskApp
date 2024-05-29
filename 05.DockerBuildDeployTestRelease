@@ -1,0 +1,102 @@
+pipeline {
+      agent {
+          label 'BuildServer'
+      }
+      
+      environment {
+        // def img = "${env.JOB_NAME}:${env.BUILD_ID}"
+        registry = "gvenkat/flaskapp"
+        img = "${registry}" + ":${env.BUILD_ID}"
+      }
+  
+      stages {
+          stage('Checkout Code') {
+              steps {
+                  echo 'Checkout Code'
+                  git 'https://github.com/venkat09docs/FlaskApp.git'
+                  sh 'ls -l'
+              }              
+          } 
+
+          stage('Py Env Preparation'){
+        	   steps{
+            		sh '''#!/bin/bash
+            		source ~/.bashrc
+            		pyenv versions
+
+            		pyenv global 3.10.0'''
+        	   }
+  	      }
+
+          stage('Py Venv Setup'){
+              steps{
+                sh '''echo "#### Create venv and activate it python version 3.10.0 ####"
+                python3 -m venv flaskapp
+                source flaskapp/bin/activate
+                python3 -V
+
+                echo "##### Install required Python Modules ####"
+                pip install -r requirements.txt
+
+                # Cobertura - Code Coverage
+                pip install coverage
+                pip install pytest-cov'''
+              }    
+          }         
+          
+          stage('Build Image') {
+              steps {
+                  echo 'Build Docker Image using Docker file'
+                  // docker build -t flaskapp:v1 .
+                  script { 
+                    dockerImg = docker.build("${img}")
+                  }
+              }              
+          }
+          stage('Deploy Container') {
+              steps {
+                  echo 'Deploy Container'
+                  script { 
+                    sh returnStatus: true, script: 'docker stop $(docker ps -a | grep ${JOB_NAME} | awk \'{print $1}\')'
+                    cont = docker.image("${img}").run("--rm --name ${JOB_NAME} -p 5000:5000")
+                  }
+              }              
+          }    
+          stage('Running API Test Cases') {
+              steps {
+                  sh returnStatus: true, script: '''echo \'#### Running API Test Cases ####\'
+                  source flaskapp/bin/activate
+                  pytest APITests --alluredir=./allure_results'''                                    
+              }
+              post{
+                success {
+                    // Install allure Plugin
+                    // Add allure tool in System Tool Configuration
+                    echo "Publishing Allure Test Results"
+                    allure includeProperties: false, jdk: '', results: [[path: 'allure_results']]
+                }
+              }              
+          }   
+          stage('Release') {
+              steps {
+                  echo 'Distribute Image to the Docker Hub'      
+                  script {
+                      docker.withRegistry('https://registry.docker.com','docker-hub-credentials'){
+                          dockerImg.push()
+                          dockerImg.push('latest')
+                      }
+                  }            
+              }              
+          }    
+      } // end of Stages  
+      post {
+          always {
+              script {
+                  if (currentBuild.currentResult == 'FAILURE'){
+                      prevImg = "${registry}" + ":${currentBuild.previousSuccessfulBuild.number}"
+                      sh returnStatus: true, script: "docker run -d --rm --name ${JOB_NAME} -p 5000:5000 ${prevImg}"
+                  }
+              }
+          }
+      }    
+  } // end of Pipeline
