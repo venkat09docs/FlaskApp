@@ -24,5 +24,14 @@ pipeline {
                             }
                 }              
           }
+          stage('Deploy Container') {
+              steps {
+                  echo 'Deploy Container'
+                  script { 
+                    cont = docker.image("${img}").run("-d -p 5000:5000")
+                    sleep (100)
+                  }
+              }              
+          }
           }
 }
