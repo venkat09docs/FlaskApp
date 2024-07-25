@@ -22,7 +22,7 @@ pipeline {
             		source ~/.bashrc
             		pyenv versions
 
-            		pyenv global 3.10.0'''
+            		pyenv global pypy3.8-7.3.11'''
         	   }
   	        }
 
