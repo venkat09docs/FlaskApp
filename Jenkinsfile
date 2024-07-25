@@ -5,7 +5,7 @@ pipeline {
           
           environment {
               // def img = ("${env.JOB_NAME}:${env.BUILD_ID}").toLowerCase()
-              registry = "gvenkat/flaskapp"
+              def registry = "gvenkat/flaskapp"
               def img = "${registry}" + ":${env.BUILD_ID}"
           }
 
@@ -86,7 +86,7 @@ pipeline {
                     steps {
                         echo 'Deploy Container'
                         script { 
-                            sh returnStatus: true, script: 'docker stop $(docker ps -a | grep ${env.JOB_NAME} | awk \'{print $1}\')'
+                            sh returnStatus: true, script: 'docker stop $(docker ps -a | grep ${env.registry} | awk \'{print $1}\')'
                             cont = docker.image("${img}").run("-p 5000:5000")
                             sleep (100)
                         }
