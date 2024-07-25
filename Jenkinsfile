@@ -103,6 +103,22 @@ pipeline {
                       }
                   }            
               }              
-            } 
+            }
+
+            stage('Running API Test Cases') {
+              steps {
+                  sh returnStatus: true, script: '''echo \'#### Running API Test Cases ####\'
+                  source flaskapp/bin/activate
+                  pytest APITests --alluredir=./allure_results'''                                    
+              }
+              post{
+                success {
+                    // Install allure Plugin
+                    // Add allure tool in System Tool Configuration
+                    echo "Publishing Allure Test Results"
+                    allure includeProperties: false, jdk: '', results: [[path: 'allure_results']]
+                }
+              }              
+          } 
         }
 }
