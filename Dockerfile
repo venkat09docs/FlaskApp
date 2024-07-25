@@ -2,7 +2,7 @@
 #docker build -t mysmartapp .
 #docker run -d -p 5000:5000 mysmartapp
 
-FROM python:3.10-slim-buster
+FROM python:3.10
 ADD . /smartapp
 WORKDIR /smartapp
 EXPOSE 5000
