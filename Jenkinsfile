@@ -4,7 +4,9 @@ pipeline {
           }
           
           environment {
-              def img = ("${env.JOB_NAME}:${env.BUILD_ID}").toLowerCase()
+              // def img = ("${env.JOB_NAME}:${env.BUILD_ID}").toLowerCase()
+              registry = "gvenkat/flaskapp"
+              def img = "${registry}" + ":${env.BUILD_ID}"
           }
 
           stages {
@@ -90,5 +92,17 @@ pipeline {
                         }
                     }              
             }
+
+            stage('Release') {
+              steps {
+                  echo 'Distribute Image to the Docker Hub'      
+                  script {
+                      docker.withRegistry('https://registry.docker.com','docker_registry'){
+                          dockerImg.push()
+                          dockerImg.push('latest')
+                      }
+                  }            
+              }              
+            } 
         }
 }
