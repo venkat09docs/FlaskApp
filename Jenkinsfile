@@ -42,6 +42,34 @@ pipeline {
               }    
             }
 
+            stage('Running Coverage Metrics'){
+              steps{
+                  sh returnStatus: true, script: '''echo \'#### Run Coverage Metrics ####\'
+                  source flaskapp/bin/activate
+                  pytest --cov=main --cov-report xml'''
+              }
+              post {
+                  success {
+                    // One or more steps need to be included within each condition's block.
+                    cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+                  }
+              }
+            }
+
+            stage('Running Unit Test Cases'){
+              steps{
+                    sh returnStatus: true, script: '''echo \'#### Run Unit tests ####\'
+                    source flaskapp/bin/activate
+                    pytest utests --junitxml=./xmlReport/output.xml'''
+              }
+              post {
+                success {
+                  // One or more steps need to be included within each condition's block.
+                  junit skipMarkingBuildUnstable: true, stdioRetention: '', testResults: 'xmlReport/output.xml'
+                }
+              }
+            }
+
             stage('Build Image') {
                         steps {
                             echo 'Build Docker Image using Docker file'
@@ -56,7 +84,8 @@ pipeline {
                     steps {
                         echo 'Deploy Container'
                         script { 
-                            cont = docker.image("${img}").run("-d -p 5000:5000")
+                            sh returnStatus: true, script: 'docker stop $(docker ps -a | grep ${env.JOB_NAME} | awk \'{print $1}\')'
+                            cont = docker.image("${img}").run("-p 5000:5000")
                             sleep (100)
                         }
                     }              
