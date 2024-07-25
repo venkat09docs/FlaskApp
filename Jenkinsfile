@@ -88,7 +88,7 @@ pipeline {
                         script { 
                             sh returnStatus: true, script: 'docker stop $(docker ps -a | grep ${env.registry} | awk \'{print $1}\')'
                             cont = docker.image("${img}").run("-p 5000:5000")
-                            sleep (100)
+                            // sleep (100)
                         }
                     }              
             }
